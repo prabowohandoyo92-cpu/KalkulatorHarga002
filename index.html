@@ -587,7 +587,7 @@
             const invoiceItemSelect = document.getElementById('invoice-item-select');
             const invoiceDetails = document.getElementById('invoice-details');
             const invoiceDateInput = document.getElementById('invoice-date');
-            
+
             const discountPercentInput = document.getElementById('discount-percent');
             const redeemCodeInput = document.getElementById('redeem-code');
 
@@ -905,6 +905,13 @@
                 const btnOriginalText = button.innerHTML;
                 button.innerHTML = '<span>Mempersiapkan PDF...</span>';
                 button.disabled = true;
+                
+                const ownerName = (document.getElementById('project-owner').value.trim().replace(/\s+/g, '_') || 'Client');
+                const today = new Date();
+                const day = String(today.getDate()).padStart(2, '0');
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const year = today.getFullYear().toString().slice(-2);
+                const dateString = `${day}${month}${year}`;
 
                 let contentToPrint;
                 let pdfFileName;
@@ -973,7 +980,7 @@
                     invoiceWrapper.style.top = '0';
                     
                     contentToPrint = document.getElementById('pdf-invoice-template');
-                    pdfFileName = 'invoice-hasta-kencana.pdf';
+                    pdfFileName = `INV_${ownerName}_${dateString}.pdf`;
                 } else {
                     const offerWrapper = document.getElementById('pdf-offer-template-wrapper');
                     
@@ -1051,7 +1058,7 @@
                     offerWrapper.style.top = '0';
 
                     contentToPrint = document.getElementById('pdf-offer-template');
-                    pdfFileName = 'penawaran-hasta-kencana.pdf';
+                    pdfFileName = `PNWR_${ownerName}_${dateString}.pdf`;
                 }
 
                 try {
