@@ -338,6 +338,9 @@
                     <p class="text-md sm:text-lg text-[var(--text-secondary)]">Kalkulator Biaya Desain</p>
                 </div>
             </div>
+            <button id="settings-btn" class="p-3 rounded-full hover:bg-[var(--bg-tertiary)] transition-colors">
+                 <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
         </header>
 
         <main id="app" class="bg-[var(--bg-secondary)] p-6 sm:p-8 rounded-2xl shadow-2xl shadow-black/20">
@@ -522,6 +525,29 @@
                 </div>
             </section>
         </main>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+            <div class="bg-[var(--bg-secondary)] w-full max-w-3xl max-h-[90vh] rounded-2xl shadow-xl flex flex-col">
+                <header class="p-4 border-b border-[var(--border-primary)] flex justify-between items-center flex-shrink-0">
+                    <h2 class="text-xl font-bold text-white">Pengaturan Paket</h2>
+                    <button id="close-settings-btn" class="p-2 rounded-full hover:bg-[var(--bg-tertiary)]">&times;</button>
+                </header>
+                <div class="p-6 overflow-y-auto space-y-6">
+                    <div id="settings-package-list" class="space-y-4">
+                        <!-- Dynamic package forms will be inserted here -->
+                    </div>
+                    <button id="add-package-btn" class="w-full flex items-center justify-center text-sm py-2 px-4 rounded-lg bg-gray-700 hover:bg-gray-600 font-semibold transition-all">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        Tambah Paket Baru
+                    </button>
+                </div>
+                <footer class="p-4 border-t border-[var(--border-primary)] flex justify-end gap-4 flex-shrink-0">
+                    <button id="cancel-settings-btn" class="py-2 px-6 rounded-lg bg-gray-600 text-white hover:bg-gray-500 font-semibold transition-all">Batal</button>
+                    <button id="save-settings-btn" class="py-2 px-6 rounded-lg bg-[var(--bg-accent)] text-white hover:bg-[var(--bg-accent-hover)] font-semibold transition-all">Simpan Perubahan</button>
+                </footer>
+            </div>
+        </div>
         
         <footer class="text-center mt-12 text-sm text-[var(--text-secondary)]">
             <p>&copy; 2025 Hasta Kencana Desain Partners. All Rights Reserved.</p>
@@ -532,7 +558,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Design Package Data
-            const packages = [
+            let packages = [
                  {
                     name: 'Desain Konsep (Paket)',
                     price: 1800000,
@@ -594,6 +620,16 @@
 
             const discountPercentInput = document.getElementById('discount-percent');
             const redeemCodeInput = document.getElementById('redeem-code');
+
+            // Settings Modal Elements
+            const settingsBtn = document.getElementById('settings-btn');
+            const settingsModal = document.getElementById('settings-modal');
+            const closeSettingsBtn = document.getElementById('close-settings-btn');
+            const cancelSettingsBtn = document.getElementById('cancel-settings-btn');
+            const saveSettingsBtn = document.getElementById('save-settings-btn');
+            const settingsPackageList = document.getElementById('settings-package-list');
+            const addPackageBtn = document.getElementById('add-package-btn');
+
 
             const formatCurrency = (amount) => {
                 return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
@@ -1145,6 +1181,95 @@
                 nextToDetailsBtn.disabled = true;
                 showSection(packageSelectionSection);
             });
+
+            // Settings Modal Logic
+            const openSettingsModal = () => {
+                renderSettingsList();
+                settingsModal.classList.remove('hidden');
+            };
+
+            const closeSettingsModal = () => {
+                settingsModal.classList.add('hidden');
+            };
+
+            const renderSettingsList = () => {
+                settingsPackageList.innerHTML = '';
+                packages.forEach((pkg, index) => {
+                    const formHtml = `
+                        <div class="p-4 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-primary)] package-edit-form">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" value="${pkg.name}" placeholder="Nama Paket" class="custom-input p-2 rounded-md setting-name">
+                                <input type="number" value="${pkg.price}" placeholder="Harga" class="custom-input p-2 rounded-md setting-price">
+                                <select class="custom-input p-2 rounded-md setting-type">
+                                    <option value="per_m2" ${pkg.type === 'per_m2' ? 'selected' : ''}>Per m²</option>
+                                    <option value="fixed_package" ${pkg.type === 'fixed_package' ? 'selected' : ''}>Paket Tetap</option>
+                                </select>
+                                <textarea placeholder="Fitur (satu per baris)" class="custom-input p-2 rounded-md md:col-span-2 h-24 setting-features">${pkg.features.join('\n')}</textarea>
+                            </div>
+                            <div class="text-right mt-2">
+                                <button class="text-red-500 hover:text-red-400 text-sm font-semibold remove-package-btn">Hapus</button>
+                            </div>
+                        </div>
+                    `;
+                    settingsPackageList.insertAdjacentHTML('beforeend', formHtml);
+                });
+            };
+
+            const saveSettings = () => {
+                const newPackages = [];
+                const forms = settingsPackageList.querySelectorAll('.package-edit-form');
+                forms.forEach(form => {
+                    const name = form.querySelector('.setting-name').value;
+                    const price = parseFloat(form.querySelector('.setting-price').value) || 0;
+                    const type = form.querySelector('.setting-type').value;
+                    const features = form.querySelector('.setting-features').value.split('\n').filter(f => f.trim() !== '');
+                    
+                    if (name) {
+                       newPackages.push({
+                           name,
+                           price,
+                           type,
+                           features,
+                           textColor: 'text-[var(--text-accent)]' // Keep consistent styling
+                       });
+                    }
+                });
+                packages = newPackages;
+                renderPackages();
+                closeSettingsModal();
+            };
+            
+            settingsPackageList.addEventListener('click', (e) => {
+                if(e.target.classList.contains('remove-package-btn')) {
+                    e.target.closest('.package-edit-form').remove();
+                }
+            });
+
+            addPackageBtn.addEventListener('click', () => {
+                const formHtml = `
+                    <div class="p-4 bg-[var(--bg-tertiary)] rounded-lg border border-[var(--border-primary)] package-edit-form">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" placeholder="Nama Paket Baru" class="custom-input p-2 rounded-md setting-name">
+                            <input type="number" placeholder="Harga" class="custom-input p-2 rounded-md setting-price">
+                            <select class="custom-input p-2 rounded-md setting-type">
+                                <option value="per_m2">Per m²</option>
+                                <option value="fixed_package">Paket Tetap</option>
+                            </select>
+                            <textarea placeholder="Fitur (satu per baris)" class="custom-input p-2 rounded-md md:col-span-2 h-24 setting-features"></textarea>
+                        </div>
+                        <div class="text-right mt-2">
+                            <button class="text-red-500 hover:text-red-400 text-sm font-semibold remove-package-btn">Hapus</button>
+                        </div>
+                    </div>
+                `;
+                settingsPackageList.insertAdjacentHTML('beforeend', formHtml);
+            });
+
+            settingsBtn.addEventListener('click', openSettingsModal);
+            closeSettingsBtn.addEventListener('click', closeSettingsModal);
+            cancelSettingsBtn.addEventListener('click', closeSettingsModal);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+
 
             // Init
             const setInitialDate = () => {
